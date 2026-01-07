@@ -1,1 +1,88 @@
 
+{
+  "name": "pl_ingest_bronze_tables",
+  "properties": {
+    "description": "Parameterized pipeline to ingest raw tables into Bronze layer in ADLS Gen2",
+    "parameters": {
+      "source_table": {
+        "type": "String"
+      },
+      "ingestion_date": {
+        "type": "String"
+      },
+      "target_path": {
+        "type": "String"
+      }
+    },
+    "activities": [
+      {
+        "name": "Lookup_Table_List",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "7.00:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource"
+          },
+          "dataset": {
+            "referenceName": "ds_source_table_list",
+            "type": "DatasetReference"
+          }
+        }
+      },
+      {
+        "name": "ForEach_Table",
+        "type": "ForEach",
+        "dependsOn": [
+          {
+            "activity": "Lookup_Table_List",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "items": {
+            "value": "@activity('Lookup_Table_List').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "name": "Copy_To_Bronze",
+              "type": "Copy",
+              "policy": {
+                "timeout": "7.00:00:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 30
+              },
+              "typeProperties": {
+                "source": {
+                  "type": "RelationalSource"
+                },
+                "sink": {
+                  "type": "ParquetSink"
+                }
+              },
+              "inputs": [
+                {
+                  "referenceName": "ds_source_table",
+                  "type": "DatasetReference"
+                }
+              ],
+              "outputs": [
+                {
+                  "referenceName": "ds_bronze_adls",
+                  "type": "DatasetReference"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
