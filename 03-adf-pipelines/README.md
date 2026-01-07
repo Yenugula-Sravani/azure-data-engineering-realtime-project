@@ -67,6 +67,23 @@ pl_ingest_bronze_tables
 - Connection strings referenced via Azure Key Vault (placeholder)
 - No hard-coded credentials
 - Managed identity recommended
+
+## Linked Services & Integration Runtime
+
+This project intentionally does not include concrete Azure Data Factory
+Linked Service or Self-hosted Integration Runtime configurations.
+
+Reason:
+- Linked Services are environment-specific and vary across organizations
+- Self-hosted Integration Runtime setup depends on network, firewall,
+  and security policies managed by infrastructure teams
+- The core focus of this project is pipeline design, control flow,
+  parameterization, and data engineering logic
+
+This approach reflects real-world enterprise practices where
+data engineering logic and infrastructure configuration
+are handled independently.
+
 ---
 ## Outcome
 - Reliable raw data ingestion into Bronze layer
